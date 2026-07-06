@@ -1,5 +1,7 @@
 import type { Project, UserMessage } from "@opencode-ai/sdk/v2"
+import type { Message, Part } from "@opencode-ai/sdk/v2/client"
 import { useDialog } from "@opencode-ai/ui/context/dialog"
+import { Binary } from "@opencode-ai/core/util/binary"
 import { createQuery, skipToken, useMutation, useQueryClient } from "@tanstack/solid-query"
 import {
   batch,
@@ -22,7 +24,7 @@ import { createResizeObserver } from "@solid-primitives/resize-observer"
 import { debounce } from "@solid-primitives/scheduled"
 import { useLocal } from "@/context/local"
 import { FileProvider, selectionFromLines, useFile, type FileSelection, type SelectedLineRange } from "@/context/file"
-import { createStore } from "solid-js/store"
+import { createStore, produce } from "solid-js/store"
 import type { SessionReviewLineComment } from "@opencode-ai/session-ui/session-review"
 import { ResizeHandle } from "@opencode-ai/ui/resize-handle"
 import { Select } from "@opencode-ai/ui/select"
@@ -1737,6 +1739,45 @@ export default function Page() {
     },
   }))
 
+  const removeMessage = useMutation(() => ({
+    mutationFn: (input: { sessionID: string; messageID: string }) =>
+      sdk().client.session.deleteMessage(input).then((result) => {
+        if (result.error) throw new Error("delete failed")
+        return result.data
+      }),
+    onMutate: (input) => {
+      const target = sync()
+      const messages = target.data.message[input.sessionID]
+      const removed = messages?.find((item) => item.id === input.messageID)
+      const parts = target.data.part[input.messageID]
+      target.set(
+        produce((draft) => {
+          const list = draft.message[input.sessionID]
+          if (!list) return
+          const result = Binary.search(list, input.messageID, (m) => m.id)
+          if (result.found) list.splice(result.index, 1)
+          for (const part of draft.part[input.messageID] ?? []) {
+            delete draft.part_text_accum_delta[part.id]
+          }
+          delete draft.part[input.messageID]
+        }),
+      )
+      return { removed, parts }
+    },
+    onError: (err, input, ctx) => {
+      if (!ctx) return
+      sync().set(
+        produce((draft) => {
+          const list = draft.message[input.sessionID] ?? []
+          const result = Binary.search(list, input.messageID, (m) => m.id)
+          if (!result.found) list.splice(result.index, 0, ctx.removed as Message)
+          draft.part[input.messageID] = ctx.parts ?? ([] as Part[])
+        }),
+      )
+      fail(err)
+    },
+  }))
+
   const restoreMutation = useMutation(() => ({
     mutationFn: async (id: string) => {
       const sessionID = params.id
@@ -1783,6 +1824,11 @@ export default function Page() {
     return restoreMutation.mutateAsync(id)
   }
 
+  const remove = (input: { sessionID: string; messageID: string }) => {
+    if (removeMessage.isPending) return
+    void removeMessage.mutateAsync(input)
+  }
+
   const rolled = createMemo(() => {
     const id = revertMessageID()
     if (!id) return []
@@ -1791,7 +1837,7 @@ export default function Page() {
       .map((item) => ({ id: item.id, text: line(item.id) }))
   })
 
-  const actions = { revert }
+  const actions = { revert, remove }
 
   createEffect(() => {
     const sessionID = params.id

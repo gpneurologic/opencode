@@ -137,6 +137,7 @@ export const dict = {
   "ui.message.copyMessage": "คัดลอกข้อความ",
   "ui.message.forkMessage": "แตกแขนงไปยังเซสชันใหม่",
   "ui.message.revertMessage": "รีเซ็ตไปยังจุดนี้",
+  "ui.message.removeMessage": "ลบข้อความ",
   "ui.message.copyResponse": "คัดลอกคำตอบ",
   "ui.message.copied": "คัดลอกแล้ว!",
   "ui.message.interrupted": "ถูกขัดจังหวะ",

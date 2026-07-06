@@ -141,6 +141,7 @@ export const dict = {
   "ui.message.copyMessage": "Nachricht kopieren",
   "ui.message.forkMessage": "In neue Sitzung abzweigen",
   "ui.message.revertMessage": "Auf diesen Punkt zurücksetzen",
+  "ui.message.removeMessage": "Nachricht löschen",
   "ui.message.copyResponse": "Antwort kopieren",
   "ui.message.copied": "Kopiert!",
   "ui.message.interrupted": "Unterbrochen",

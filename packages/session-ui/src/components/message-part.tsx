@@ -174,6 +174,7 @@ export type SessionAction = (input: { sessionID: string; messageID: string }) =>
 export type UserActions = {
   fork?: SessionAction
   revert?: SessionAction
+  remove?: SessionAction
 }
 
 export interface MessagePartProps {
@@ -189,11 +190,12 @@ export interface MessagePartProps {
   showAssistantCopyPartID?: string | null
   turnDurationMs?: number
   useV2Actions?: boolean
+  remove?: SessionAction
 }
 
 function MessageActionButton(
   props: Pick<ComponentProps<"button">, "disabled" | "onMouseDown" | "onClick" | "aria-label"> & {
-    icon: "check" | "copy" | "reset"
+    icon: "check" | "copy" | "reset" | "close"
     label: JSX.Element
     useV2?: boolean
   },
@@ -745,6 +747,7 @@ export function AssistantParts(props: {
   showReasoningSummaries?: boolean
   shellToolDefaultOpen?: boolean
   editToolDefaultOpen?: boolean
+  remove?: SessionAction
 }) {
   const data = useData()
   const emptyParts: PartType[] = []
@@ -826,6 +829,7 @@ export function AssistantParts(props: {
                         showAssistantCopyPartID={props.showAssistantCopyPartID}
                         turnDurationMs={props.turnDurationMs}
                         useV2Actions={props.useV2Actions}
+                        remove={props.remove}
                         defaultOpen={partDefaultOpen(item()!, props.shellToolDefaultOpen, props.editToolDefaultOpen)}
                       />
                     </Show>
@@ -969,6 +973,7 @@ export function Message(props: MessageProps) {
             showAssistantCopyPartID={props.showAssistantCopyPartID}
             showReasoningSummaries={props.showReasoningSummaries}
             useV2Actions={props.useV2Actions}
+            remove={props.actions?.remove}
           />
         )}
       </Match>
@@ -982,6 +987,7 @@ export function AssistantMessageDisplay(props: {
   showAssistantCopyPartID?: string | null
   showReasoningSummaries?: boolean
   useV2Actions?: boolean
+  remove?: SessionAction
 }) {
   const emptyTools: ToolPart[] = []
   const part = createMemo(() => index(props.parts))
@@ -1042,6 +1048,7 @@ export function AssistantMessageDisplay(props: {
                       message={props.message}
                       showAssistantCopyPartID={props.showAssistantCopyPartID}
                       useV2Actions={props.useV2Actions}
+                      remove={props.remove}
                     />
                   </Show>
                 )
@@ -1250,8 +1257,41 @@ export function UserMessageDisplay(props: {
       .finally(() => setState("busy", false))
   }
 
+  const remove = () => {
+    const act = props.actions?.remove
+    if (!act || busy()) return
+    setState("busy", true)
+    void Promise.resolve()
+      .then(() =>
+        act({
+          sessionID: props.message.sessionID,
+          messageID: props.message.id,
+        }),
+      )
+      .then(
+        () => setState("busy", false),
+        () => setState("busy", false),
+      )
+  }
+
   return (
     <div data-component="user-message" data-timeline-part-id={textPart()?.id}>
+      <Show when={props.actions?.remove}>
+        <div data-slot="user-message-close">
+          <MessageActionButton
+            icon="close"
+            label={i18n.t("ui.message.removeMessage")}
+            useV2={props.useV2Actions}
+            disabled={!!busy()}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={(event) => {
+              event.stopPropagation()
+              remove()
+            }}
+            aria-label={i18n.t("ui.message.removeMessage")}
+          />
+        </div>
+      </Show>
       <Show when={attachments().length > 0}>
         <div data-slot="user-message-attachments">
           <For each={attachments()}>
@@ -1402,6 +1442,7 @@ export function Part(props: MessagePartProps) {
         showAssistantCopyPartID={props.showAssistantCopyPartID}
         turnDurationMs={props.turnDurationMs}
         useV2Actions={props.useV2Actions}
+        remove={props.remove}
       />
     </Show>
   )
@@ -1661,6 +1702,8 @@ PART_MAPPING["text"] = function TextPartDisplay(props) {
     if (typeof props.showAssistantCopyPartID === "string") return props.showAssistantCopyPartID === part().id
     return isLastTextPart()
   })
+  const isAssistant = createMemo(() => props.message.role === "assistant")
+  const showClose = createMemo(() => isAssistant() && !!props.remove && showCopy())
   const [copied, setCopied] = createSignal(false)
 
   const handleCopy = async () => {
@@ -1672,6 +1715,18 @@ PART_MAPPING["text"] = function TextPartDisplay(props) {
     }
   }
 
+  const handleRemove = () => {
+    const act = props.remove
+    if (!act) return
+    const result = act({
+      sessionID: props.message.sessionID,
+      messageID: props.message.id,
+    })
+    if (result && typeof (result as Promise<void>).catch === "function") {
+      ;(result as Promise<void>).catch(() => {})
+    }
+  }
+
   return (
     <Show when={text()}>
       <div data-component="text-part" data-timeline-part-id={part().id}>
@@ -1680,7 +1735,7 @@ PART_MAPPING["text"] = function TextPartDisplay(props) {
             <PacedMarkdown text={text()} cacheKey={part().id} streaming={streaming()} />
           </Show>
         </div>
-        <Show when={showCopy()}>
+        <Show when={showCopy() || showClose()}>
           <div data-slot="text-part-copy-wrapper" data-interrupted={interrupted() ? "" : undefined}>
             <MessageActionButton
               icon={copied() ? "check" : "copy"}
@@ -1690,6 +1745,16 @@ PART_MAPPING["text"] = function TextPartDisplay(props) {
               onClick={handleCopy}
               aria-label={copied() ? i18n.t("ui.message.copied") : i18n.t("ui.message.copyResponse")}
             />
+            <Show when={showClose()}>
+              <MessageActionButton
+                icon="close"
+                label={i18n.t("ui.message.removeMessage")}
+                useV2={props.useV2Actions}
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={handleRemove}
+                aria-label={i18n.t("ui.message.removeMessage")}
+              />
+            </Show>
             <Show when={meta()}>
               <span data-slot="text-part-meta" class="text-12-regular text-text-weak cursor-default">
                 {meta()}

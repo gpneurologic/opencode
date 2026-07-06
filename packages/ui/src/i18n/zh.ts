@@ -139,6 +139,7 @@ export const dict = {
   "ui.message.copyMessage": "复制消息",
   "ui.message.forkMessage": "分叉到新会话",
   "ui.message.revertMessage": "重置到此点",
+  "ui.message.removeMessage": "删除消息",
   "ui.message.copyResponse": "复制回复",
   "ui.message.copied": "已复制！",
   "ui.message.interrupted": "已中断",

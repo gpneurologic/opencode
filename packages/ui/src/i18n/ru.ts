@@ -135,6 +135,7 @@ export const dict = {
   "ui.message.copyMessage": "Копировать сообщение",
   "ui.message.forkMessage": "Ответвить в новую сессию",
   "ui.message.revertMessage": "Сбросить до этого момента",
+  "ui.message.removeMessage": "Удалить сообщение",
   "ui.message.copyResponse": "Копировать ответ",
   "ui.message.copied": "Скопировано!",
   "ui.message.interrupted": "Прервано",
