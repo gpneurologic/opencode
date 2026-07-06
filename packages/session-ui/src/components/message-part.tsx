@@ -171,10 +171,13 @@ export interface MessageProps {
 
 export type SessionAction = (input: { sessionID: string; messageID: string }) => Promise<void> | void
 
+export type PartAction = (input: { sessionID: string; messageID: string; partID: string }) => Promise<void> | void
+
 export type UserActions = {
   fork?: SessionAction
   revert?: SessionAction
   remove?: SessionAction
+  removePart?: PartAction
 }
 
 export interface MessagePartProps {
@@ -191,6 +194,7 @@ export interface MessagePartProps {
   turnDurationMs?: number
   useV2Actions?: boolean
   remove?: SessionAction
+  removePart?: PartAction
 }
 
 function MessageActionButton(
@@ -748,6 +752,7 @@ export function AssistantParts(props: {
   shellToolDefaultOpen?: boolean
   editToolDefaultOpen?: boolean
   remove?: SessionAction
+  removePart?: PartAction
 }) {
   const data = useData()
   const emptyParts: PartType[] = []
@@ -830,6 +835,7 @@ export function AssistantParts(props: {
                         turnDurationMs={props.turnDurationMs}
                         useV2Actions={props.useV2Actions}
                         remove={props.remove}
+                        removePart={props.removePart}
                         defaultOpen={partDefaultOpen(item()!, props.shellToolDefaultOpen, props.editToolDefaultOpen)}
                       />
                     </Show>
@@ -974,6 +980,7 @@ export function Message(props: MessageProps) {
             showReasoningSummaries={props.showReasoningSummaries}
             useV2Actions={props.useV2Actions}
             remove={props.actions?.remove}
+            removePart={props.actions?.removePart}
           />
         )}
       </Match>
@@ -988,6 +995,7 @@ export function AssistantMessageDisplay(props: {
   showReasoningSummaries?: boolean
   useV2Actions?: boolean
   remove?: SessionAction
+  removePart?: PartAction
 }) {
   const emptyTools: ToolPart[] = []
   const part = createMemo(() => index(props.parts))
@@ -1048,6 +1056,7 @@ export function AssistantMessageDisplay(props: {
                       message={props.message}
                       showAssistantCopyPartID={props.showAssistantCopyPartID}
                       useV2Actions={props.useV2Actions}
+                      removePart={props.removePart}
                       remove={props.remove}
                     />
                   </Show>
@@ -1443,6 +1452,7 @@ export function Part(props: MessagePartProps) {
         turnDurationMs={props.turnDurationMs}
         useV2Actions={props.useV2Actions}
         remove={props.remove}
+        removePart={props.removePart}
       />
     </Show>
   )
@@ -1562,9 +1572,37 @@ PART_MAPPING["tool"] = function ToolPartDisplay(props) {
   const controlledOpen = () => (props.onToolOpenChange ? (props.toolOpen ?? props.defaultOpen) : undefined)
   const handleToolOpenChange = (open: boolean) => props.onToolOpenChange?.(open)
 
+  const handleToolRemove = () => {
+    const act = props.removePart
+    if (!act) return
+    const result = act({
+      sessionID: props.message.sessionID,
+      messageID: props.message.id,
+      partID: props.part.id,
+    })
+    if (result && typeof (result as Promise<void>).catch === "function") {
+      ;(result as Promise<void>).catch(() => {})
+    }
+  }
+
   return (
     <Show when={!hideQuestion()}>
       <div data-component="tool-part-wrapper" data-timeline-part-id={part().id}>
+        <Show when={props.removePart && part().state.status !== "running" && part().state.status !== "pending"}>
+          <div data-slot="tool-part-close">
+            <MessageActionButton
+              icon="close"
+              label={i18n.t("ui.message.removeMessage")}
+              useV2={props.useV2Actions}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={(event) => {
+                event.stopPropagation()
+                handleToolRemove()
+              }}
+              aria-label={i18n.t("ui.message.removeMessage")}
+            />
+          </div>
+        </Show>
         <Switch>
           <Match when={part().state.status === "error" && (part().state as any).error}>
             {(error) => {

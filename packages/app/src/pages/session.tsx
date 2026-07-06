@@ -1829,6 +1829,15 @@ export default function Page() {
     void removeMessage.mutateAsync(input)
   }
 
+  const removePart = (input: { sessionID: string; messageID: string; partID: string }) => {
+    void sdk()
+      .client.part.delete(input)
+      .then((result) => {
+        if (result.error) fail(new Error("delete failed"))
+      })
+      .catch(fail)
+  }
+
   const rolled = createMemo(() => {
     const id = revertMessageID()
     if (!id) return []
@@ -1837,7 +1846,7 @@ export default function Page() {
       .map((item) => ({ id: item.id, text: line(item.id) }))
   })
 
-  const actions = { revert, remove }
+  const actions = { revert, remove, removePart }
 
   createEffect(() => {
     const sessionID = params.id

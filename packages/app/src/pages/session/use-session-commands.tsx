@@ -385,6 +385,34 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
     })
   }
 
+  const removePartMutation = useMutation(() => ({
+    mutationFn: (input: { sessionID: string; messageID: string; partID: string }) =>
+      sdk().client.part.delete(input).then((result) => {
+        if (result.error) throw new Error("delete failed")
+        return result.data
+      }),
+    onMutate: (input) => {
+      const target = sync()
+      target.set(
+        produce((draft) => {
+          const list = draft.part[input.messageID]
+          if (!list) return
+          const result = Binary.search(list, input.partID, (p) => p.id)
+          if (result.found) list.splice(result.index, 1)
+          if (list.length === 0) delete draft.part[input.messageID]
+          delete draft.part_text_accum_delta[input.partID]
+        }),
+      )
+      return {}
+    },
+    onError: (err) => fail(err),
+  }))
+
+  const removePart = (input: { sessionID: string; messageID: string; partID: string }) => {
+    if (removePartMutation.isPending) return
+    void removePartMutation.mutateAsync(input)
+  }
+
   const autoclean = async () => {
     const sessionID = params.id
     if (!sessionID) return
