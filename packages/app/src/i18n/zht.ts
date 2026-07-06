@@ -85,6 +85,8 @@ export const dict = {
   "command.session.redo.description": "重做上一則復原的訊息",
   "command.session.compact": "精簡工作階段",
   "command.session.compact.description": "總結工作階段以減少上下文大小",
+  "command.session.autoclean": "清理命令輸出",
+  "command.session.autoclean.description": "從對話記錄中移除 shell 指令輸出",
   "command.session.fork": "從訊息分支",
   "command.session.fork.description": "從先前的訊息建立新工作階段",
   "command.session.share": "分享工作階段",
@@ -441,6 +443,13 @@ export const dict = {
   "toast.session.unshare.failed.description": "取消分享工作階段時發生錯誤",
 
   "toast.session.listFailed.title": "無法載入 {{project}} 的工作階段",
+
+  "toast.session.autoclean.success.title": "自動清理完成",
+  "toast.session.autoclean.success.description": "已移除 {{count}} 個 shell 指令輸出區塊",
+  "toast.session.autoclean.none.title": "沒有可清理的內容",
+  "toast.session.autoclean.none.description": "此工作階段中找不到 shell 指令輸出",
+  "toast.session.autoclean.failed.title": "自動清理失敗",
+  "toast.session.autoclean.failed.description": "無法從此工作階段移除 shell 指令輸出",
 
   "toast.update.title": "有可用更新",
   "toast.update.description": "OpenCode 有新版本 ({{version}}) 可安裝。",

@@ -81,6 +81,8 @@ export const dict = {
   "command.session.redo.description": "Vrati posljednju poništenu poruku",
   "command.session.compact": "Sažmi sesiju",
   "command.session.compact.description": "Sažmi sesiju kako bi se smanjio kontekst",
+  "command.session.autoclean": "Očisti izlaz komandi",
+  "command.session.autoclean.description": "Ukloni izlaz shell komandi iz historije razgovora",
   "command.session.fork": "Fork iz poruke",
   "command.session.fork.description": "Kreiraj novu sesiju iz prethodne poruke",
   "command.session.share": "Podijeli sesiju",
@@ -445,6 +447,13 @@ export const dict = {
   "toast.session.unshare.failed.description": "Došlo je do greške prilikom ukidanja dijeljenja",
 
   "toast.session.listFailed.title": "Neuspjelo učitavanje sesija za {{project}}",
+
+  "toast.session.autoclean.success.title": "Automatsko čišćenje završeno",
+  "toast.session.autoclean.success.description": "Uklonjeno {{count}} blokova izlaza shell komandi",
+  "toast.session.autoclean.none.title": "Nema šta za čišćenje",
+  "toast.session.autoclean.none.description": "U ovoj sesiji nije pronađen izlaz shell komandi",
+  "toast.session.autoclean.failed.title": "Automatsko čišćenje nije uspjelo",
+  "toast.session.autoclean.failed.description": "Nije moguće ukloniti izlaz shell komandi iz ove sesije",
 
   "toast.update.title": "Dostupno ažuriranje",
   "toast.update.description": "Nova verzija OpenCode-a ({{version}}) je dostupna za instalaciju.",

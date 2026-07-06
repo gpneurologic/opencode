@@ -578,6 +578,51 @@ export function Session() {
       },
     },
     {
+      title: "Autoclean command output",
+      value: "session.autoclean",
+      category: "Session",
+      slash: {
+        name: "autoclean",
+      },
+      run: async () => {
+        const targets: Array<{ messageID: string; partID: string }> = []
+        for (const message of messages()) {
+          const parts = sync.data.part[message.id] ?? []
+          for (const part of parts) {
+            if (part.type === "tool" && part.tool === "bash") {
+              targets.push({ messageID: message.id, partID: part.id })
+            }
+          }
+        }
+
+        if (targets.length === 0) {
+          toast.show({ message: "No shell command output to remove", variant: "info" })
+          dialog.clear()
+          return
+        }
+
+        let removed = 0
+        for (const { messageID, partID } of targets) {
+          try {
+            await sdk.client.part.delete({ sessionID: route.sessionID, messageID, partID })
+            removed++
+          } catch {
+            // Continue with the next part on individual failure
+          }
+        }
+
+        if (removed === 0) {
+          toast.show({ message: "Failed to remove shell command output", variant: "error" })
+        } else {
+          toast.show({
+            message: Locale.pluralize(removed, "Removed 1 shell command output block", "Removed {} shell command output blocks"),
+            variant: "success",
+          })
+        }
+        dialog.clear()
+      },
+    },
+    {
       title: "Unshare session",
       value: "session.unshare",
       category: "Session",

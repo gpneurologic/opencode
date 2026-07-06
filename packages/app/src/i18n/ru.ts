@@ -81,6 +81,8 @@ export const dict = {
   "command.session.redo.description": "Повторить отменённое сообщение",
   "command.session.compact": "Сжать сессию",
   "command.session.compact.description": "Сократить сессию для уменьшения размера контекста",
+  "command.session.autoclean": "Очистить вывод команд",
+  "command.session.autoclean.description": "Удалить вывод команд оболочки из истории разговора",
   "command.session.fork": "Создать ответвление",
   "command.session.fork.description": "Создать новую сессию из сообщения",
   "command.session.share": "Поделиться сессией",
@@ -444,6 +446,13 @@ export const dict = {
   "toast.session.unshare.failed.description": "Произошла ошибка при отмене публикации",
 
   "toast.session.listFailed.title": "Не удалось загрузить сессии для {{project}}",
+
+  "toast.session.autoclean.success.title": "Автоочистка завершена",
+  "toast.session.autoclean.success.description": "Удалено {{count}} блоков вывода команд оболочки",
+  "toast.session.autoclean.none.title": "Нечего чистить",
+  "toast.session.autoclean.none.description": "В этой сессии не найден вывод команд оболочки",
+  "toast.session.autoclean.failed.title": "Автоочистка не удалась",
+  "toast.session.autoclean.failed.description": "Не удалось удалить вывод команд оболочки из этой сессии",
 
   "toast.update.title": "Доступно обновление",
   "toast.update.description": "Новая версия OpenCode ({{version}}) доступна для установки.",

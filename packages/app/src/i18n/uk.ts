@@ -84,6 +84,8 @@ export const dict = {
   "command.session.redo.description": "Повторити останнє скасоване повідомлення",
   "command.session.compact": "Стиснути сесію",
   "command.session.compact.description": "Підсумувати сесію, щоб зменшити розмір контексту",
+  "command.session.autoclean": "Очистити вивід команд",
+  "command.session.autoclean.description": "Видалити вивід команд оболонки з історії розмови",
   "command.session.fork": "Відгалузити від повідомлення",
   "command.session.fork.description": "Створити нову сесію з попереднього повідомлення",
   "command.session.share": "Поділитися сесією",
@@ -464,6 +466,13 @@ export const dict = {
   "toast.session.unshare.failed.description": "Під час припинення поширення сесії сталася помилка",
 
   "toast.session.listFailed.title": "Не вдалося завантажити сесії для {{project}}",
+
+  "toast.session.autoclean.success.title": "Автоочищення завершено",
+  "toast.session.autoclean.success.description": "Видалено {{count}} блоків виводу команд оболонки",
+  "toast.session.autoclean.none.title": "Нічого очищати",
+  "toast.session.autoclean.none.description": "У цій сесії не знайдено виводу команд оболонки",
+  "toast.session.autoclean.failed.title": "Не вдалося виконати автоочищення",
+  "toast.session.autoclean.failed.description": "Не вдалося видалити вивід команд оболонки з цієї сесії",
   "toast.project.reloadFailed.title": "Не вдалося перезавантажити {{project}}",
 
   "toast.update.title": "Доступне оновлення",

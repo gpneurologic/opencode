@@ -17,6 +17,7 @@ import { findLast } from "@opencode-ai/core/util/array"
 import { createSessionTabs } from "@/pages/session/helpers"
 import { extractPromptFromParts } from "@/utils/prompt"
 import { UserMessage } from "@opencode-ai/sdk/v2"
+import type { Part } from "@opencode-ai/sdk/v2/client"
 import { useSessionLayout } from "@/pages/session/session-layout"
 import { useTabs } from "@/context/tabs"
 import { requireServerKey } from "@/utils/session-route"
@@ -34,6 +35,16 @@ const withCategory = (category: string) => {
     ...option,
     category,
   })
+}
+
+// Shell-command tool parts render their text prefixed with "$ ". That is the
+// only CLI surface in the conversation history, so matching the tool name is
+// equivalent to the "$"-prefix heuristic and does not require re-running the
+// renderer's text composition.
+const COMMAND_LINE_TOOLS = new Set(["bash"])
+
+function isCommandLinePart(part: Part): boolean {
+  return part.type === "tool" && COMMAND_LINE_TOOLS.has(part.tool)
 }
 
 export const useSessionCommands = (actions: SessionCommandContext) => {
@@ -374,6 +385,54 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
     })
   }
 
+  const autoclean = async () => {
+    const sessionID = params.id
+    if (!sessionID) return
+
+    const targets: Array<{ messageID: string; partID: string }> = []
+    for (const message of messages()) {
+      const parts = sync().data.part[message.id] ?? []
+      for (const part of parts) {
+        if (isCommandLinePart(part)) targets.push({ messageID: message.id, partID: part.id })
+      }
+    }
+
+    if (targets.length === 0) {
+      showToast({
+        title: language.t("toast.session.autoclean.none.title"),
+        description: language.t("toast.session.autoclean.none.description"),
+      })
+      return
+    }
+
+    let succeeded = 0
+    for (const { messageID, partID } of targets) {
+      try {
+        await sdk().client.part.delete({ sessionID, messageID, partID })
+        succeeded++
+      } catch {
+        // Continue with the next part on individual failure
+      }
+    }
+
+    if (succeeded === 0) {
+      showToast({
+        title: language.t("toast.session.autoclean.failed.title"),
+        description: language.t("toast.session.autoclean.failed.description"),
+        variant: "error",
+      })
+      return
+    }
+
+    showToast({
+      title: language.t("toast.session.autoclean.success.title"),
+      description: language.t("toast.session.autoclean.success.description", {
+        count: String(succeeded),
+      }),
+      variant: "success",
+    })
+  }
+
   const fork = () => {
     void openDialog(
       () => import("@/components/dialog-fork"),
@@ -442,6 +501,14 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
       slash: "compact",
       disabled: !params.id || visibleUserMessages().length === 0,
       onSelect: compact,
+    }),
+    sessionCommand({
+      id: "session.autoclean",
+      title: language.t("command.session.autoclean"),
+      description: language.t("command.session.autoclean.description"),
+      slash: "autoclean",
+      disabled: !params.id || visibleUserMessages().length === 0,
+      onSelect: autoclean,
     }),
     sessionCommand({
       id: "session.fork",

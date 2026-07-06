@@ -81,6 +81,8 @@ export const dict = {
   "command.session.redo.description": "ทำซ้ำข้อความที่ถูกยกเลิกล่าสุด",
   "command.session.compact": "บีบอัดเซสชัน",
   "command.session.compact.description": "สรุปเซสชันเพื่อลดขนาดบริบท",
+  "command.session.autoclean": "ล้างเอาต์พุตคำสั่ง",
+  "command.session.autoclean.description": "ลบเอาต์พุตของคำสั่งเชลล์ออกจากประวัติการสนทนา",
   "command.session.fork": "แตกแขนงจากข้อความ",
   "command.session.fork.description": "สร้างเซสชันใหม่จากข้อความก่อนหน้า",
   "command.session.share": "แชร์เซสชัน",
@@ -443,6 +445,13 @@ export const dict = {
   "toast.session.unshare.failed.description": "เกิดข้อผิดพลาดระหว่างการยกเลิกการแชร์เซสชัน",
 
   "toast.session.listFailed.title": "ไม่สามารถโหลดเซสชันสำหรับ {{project}}",
+
+  "toast.session.autoclean.success.title": "การล้างข้อมูลอัตโนมัติเสร็จสิ้น",
+  "toast.session.autoclean.success.description": "ลบบล็อกเอาต์พุตคำสั่งเชลล์แล้ว {{count}} บล็อก",
+  "toast.session.autoclean.none.title": "ไม่มีสิ่งที่ต้องล้าง",
+  "toast.session.autoclean.none.description": "ไม่พบเอาต์พุตของคำสั่งเชลล์ในเซสชันนี้",
+  "toast.session.autoclean.failed.title": "การล้างข้อมูลอัตโนมัติล้มเหลว",
+  "toast.session.autoclean.failed.description": "ไม่สามารถลบเอาต์พุตของคำสั่งเชลล์ออกจากเซสชันนี้ได้",
 
   "toast.update.title": "มีการอัปเดต",
   "toast.update.description": "เวอร์ชันใหม่ของ OpenCode ({{version}}) พร้อมใช้งานสำหรับติดตั้ง",

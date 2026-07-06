@@ -85,6 +85,8 @@ export const dict = {
   "command.session.redo.description": "Son geri alınan mesajı yinele",
   "command.session.compact": "Oturumu sıkıştır",
   "command.session.compact.description": "Bağlam boyutunu azaltmak için oturumu özetle",
+  "command.session.autoclean": "Komut çıktısını temizle",
+  "command.session.autoclean.description": "Kabuk komutu çıktılarını konuşma geçmişinden kaldır",
   "command.session.fork": "Mesajdan dallandır",
   "command.session.fork.description": "Önceki bir mesajdan yeni oturum oluştur",
   "command.session.share": "Oturumu paylaş",
@@ -448,6 +450,13 @@ export const dict = {
   "toast.session.unshare.failed.description": "Oturum paylaşımı kaldırılırken bir hata oluştu",
 
   "toast.session.listFailed.title": "{{project}} için oturumlar yüklenemedi",
+
+  "toast.session.autoclean.success.title": "Otomatik temizleme tamamlandı",
+  "toast.session.autoclean.success.description": "{{count}} kabuk komutu çıktı bloğu kaldırıldı",
+  "toast.session.autoclean.none.title": "Temizlenecek bir şey yok",
+  "toast.session.autoclean.none.description": "Bu oturumda kabuk komutu çıktısı bulunamadı",
+  "toast.session.autoclean.failed.title": "Otomatik temizleme başarısız",
+  "toast.session.autoclean.failed.description": "Bu oturumdaki kabuk komutu çıktıları kaldırılamadı",
 
   "toast.update.title": "Güncelleme mevcut",
   "toast.update.description": "OpenCode'un yeni bir sürümü ({{version}}) yüklemeye hazır.",
