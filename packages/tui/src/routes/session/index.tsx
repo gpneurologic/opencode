@@ -25,7 +25,7 @@ import { SplitBorder } from "../../ui/border"
 import { useTuiPaths, useTuiTerminalEnvironment } from "../../context/runtime"
 import { Spinner } from "../../component/spinner"
 import { createSyntaxStyleMemo, generateSubtleSyntax, selectedForeground, useTheme } from "../../context/theme"
-import { BoxRenderable, ScrollBoxRenderable, addDefaultParsers, TextAttributes, RGBA } from "@opentui/core"
+import { BoxRenderable, MouseButton, ScrollBoxRenderable, addDefaultParsers, TextAttributes, RGBA } from "@opentui/core"
 import { Prompt, type PromptRef } from "../../component/prompt"
 import type {
   AssistantMessage,
@@ -1253,7 +1253,10 @@ export function Session() {
                             <box
                               onMouseOver={() => setHover(true)}
                               onMouseOut={() => setHover(false)}
-                              onMouseUp={handleUnrevert}
+                              onMouseUp={(evt) => {
+                                if (evt.button !== MouseButton.LEFT) return
+                                void handleUnrevert()
+                              }}
                               marginTop={1}
                               flexShrink={0}
                               border={["left"]}
@@ -1299,7 +1302,6 @@ export function Session() {
                         <UserMessage
                           index={index()}
                           onMouseUp={() => {
-                            if (renderer.getSelection()?.getSelectedText()) return
                             dialog.replace(() => (
                               <DialogMessage
                                 messageID={message.id}
@@ -1437,10 +1439,13 @@ function UserMessage(props: {
             onMouseOver={() => {
               setHover(true)
             }}
-            onMouseOut={() => {
+onMouseOut={() => {
               setHover(false)
             }}
-            onMouseUp={props.onMouseUp}
+            onMouseUp={(evt) => {
+              if (evt.button !== MouseButton.RIGHT) return
+              props.onMouseUp()
+            }}
             paddingTop={1}
             paddingBottom={1}
             paddingLeft={2}
@@ -1519,9 +1524,19 @@ function AssistantMessage(props: { message: AssistantMessage; parts: Part[]; las
 
   const childShortcut = useCommandShortcut("session.child.first")
   const backgroundShortcut = useCommandShortcut("session.background")
+  const dialog = useDialog()
 
   return (
-    <>
+    <box
+      flexDirection="column"
+      flexShrink={0}
+      onMouseUp={(evt) => {
+        if (evt.button !== MouseButton.RIGHT) return
+        dialog.replace(() => (
+          <DialogMessage messageID={props.message.id} sessionID={props.message.sessionID} />
+        ))
+      }}
+    >
       <For each={props.parts}>
         {(part, index) => {
           const component = createMemo(() => PART_MAPPING[part.type as keyof typeof PART_MAPPING])
@@ -1602,7 +1617,7 @@ function AssistantMessage(props: { message: AssistantMessage; parts: Part[]; las
           </box>
         </Match>
       </Switch>
-    </>
+    </box>
   )
 }
 
@@ -1650,7 +1665,10 @@ function ReasoningPart(props: { last: boolean; part: ReasoningPart; message: Ass
         flexDirection="column"
         flexShrink={0}
       >
-        <box onMouseUp={toggle}>
+        <box onMouseUp={(evt) => {
+            if (evt.button !== MouseButton.LEFT) return
+            toggle()
+          }}>
           <ReasoningHeader
             toggleable={inMinimal()}
             open={!inMinimal() || expanded()}
@@ -1973,7 +1991,10 @@ export function InlineToolRow(props: {
       paddingLeft={3}
       onMouseOver={props.onMouseOver}
       onMouseOut={props.onMouseOut}
-      onMouseUp={props.onMouseUp}
+      onMouseUp={(evt) => {
+        if (evt.button !== MouseButton.LEFT) return
+        props.onMouseUp?.()
+      }}
       ref={(el: BoxRenderable) => {
         if (props.separate) alwaysSeparate.add(el)
         setPreLayoutSiblingMargin(el, (previous) => {
@@ -2054,7 +2075,8 @@ function BlockTool(props: {
       borderColor={theme.background}
       onMouseOver={() => props.onClick && setHover(true)}
       onMouseOut={() => setHover(false)}
-      onMouseUp={() => {
+      onMouseUp={(evt) => {
+        if (evt.button !== MouseButton.LEFT) return
         if (renderer.getSelection()?.getSelectedText()) return
         props.onClick?.()
       }}
