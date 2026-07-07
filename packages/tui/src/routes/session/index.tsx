@@ -578,7 +578,7 @@ export function Session() {
       },
     },
     {
-      title: "Autoclean command output",
+      title: "Autoclean output and thinking",
       value: "session.autoclean",
       category: "Session",
       slash: {
@@ -589,14 +589,14 @@ export function Session() {
         for (const message of messages()) {
           const parts = sync.data.part[message.id] ?? []
           for (const part of parts) {
-            if (part.type === "tool" && part.tool === "bash") {
+            if (part.type === "tool" || part.type === "reasoning") {
               targets.push({ messageID: message.id, partID: part.id })
             }
           }
         }
 
         if (targets.length === 0) {
-          toast.show({ message: "No shell command output to remove", variant: "info" })
+          toast.show({ message: "No cleanable content", variant: "info" })
           dialog.clear()
           return
         }
@@ -612,10 +612,10 @@ export function Session() {
         }
 
         if (removed === 0) {
-          toast.show({ message: "Failed to remove shell command output", variant: "error" })
+          toast.show({ message: "Failed to remove content", variant: "error" })
         } else {
           toast.show({
-            message: Locale.pluralize(removed, "Removed 1 shell command output block", "Removed {} shell command output blocks"),
+            message: Locale.pluralize(removed, "Removed 1 block", "Removed {} blocks"),
             variant: "success",
           })
         }

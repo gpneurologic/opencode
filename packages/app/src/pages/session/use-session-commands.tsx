@@ -37,14 +37,12 @@ const withCategory = (category: string) => {
   })
 }
 
-// Shell-command tool parts render their text prefixed with "$ ". That is the
-// only CLI surface in the conversation history, so matching the tool name is
-// equivalent to the "$"-prefix heuristic and does not require re-running the
-// renderer's text composition.
-const COMMAND_LINE_TOOLS = new Set(["bash"])
+function isToolPart(part: Part): boolean {
+  return part.type === "tool"
+}
 
-function isCommandLinePart(part: Part): boolean {
-  return part.type === "tool" && COMMAND_LINE_TOOLS.has(part.tool)
+function isReasoningPart(part: Part): boolean {
+  return part.type === "reasoning"
 }
 
 export const useSessionCommands = (actions: SessionCommandContext) => {
@@ -421,7 +419,8 @@ export const useSessionCommands = (actions: SessionCommandContext) => {
     for (const message of messages()) {
       const parts = sync().data.part[message.id] ?? []
       for (const part of parts) {
-        if (isCommandLinePart(part)) targets.push({ messageID: message.id, partID: part.id })
+        if (isToolPart(part) || isReasoningPart(part))
+          targets.push({ messageID: message.id, partID: part.id })
       }
     }
 
